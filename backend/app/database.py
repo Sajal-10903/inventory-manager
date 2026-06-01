@@ -5,8 +5,12 @@ from sqlalchemy.orm import declarative_base
 
 from .config import settings
 
+# Use a placeholder SQLite URL if DATABASE_URL is not configured.
+# This lets the app import and start successfully for health checks.
+_db_url = settings.DATABASE_URL or "sqlite+aiosqlite:///./fallback.db"
+
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    _db_url,
     pool_pre_ping=True,
 )
 

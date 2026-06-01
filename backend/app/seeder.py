@@ -27,18 +27,25 @@ TECH_PRODUCTS = [
     {"sku": "SAM-990-2TB", "name": "Samsung 990 PRO 2TB SSD", "price": 169.00},
 ]
 
+import traceback
+
 async def seed_products(session: AsyncSession) -> None:
     """Seed the database with 20 tech products if they don't already exist."""
-    for item in TECH_PRODUCTS:
-        # Check if product with this SKU already exists
-        result = await session.execute(select(Product).where(Product.sku == item["sku"]))
-        if result.scalars().first() is None:
-            product = Product(
-                sku=item["sku"],
-                name=item["name"],
-                price=item["price"],
-                stock=random.randint(200, 300)
-            )
-            session.add(product)
-    
-    await session.commit()
+    try:
+        for item in TECH_PRODUCTS:
+            # Check if product with this SKU already exists
+            result = await session.execute(select(Product).where(Product.sku == item["sku"]))
+            if result.scalars().first() is None:
+                product = Product(
+                    sku=item["sku"],
+                    name=item["name"],
+                    price=item["price"],
+                    stock=random.randint(200, 300)
+                )
+                session.add(product)
+        
+        await session.commit()
+    except Exception as e:
+        print("Error during database seeding:")
+        traceback.print_exc()
+        raise e

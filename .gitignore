@@ -1,0 +1,43 @@
+# ──────────────────────────
+# Environment
+# ──────────────────────────
+.env
+
+# ──────────────────────────
+# Python / Backend
+# ──────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+.venv/
+env/
+
+# ──────────────────────────
+# Node / Frontend
+# ──────────────────────────
+node_modules/
+frontend/dist/
+frontend/build/
+*.log
+npm-debug.log*
+
+# ──────────────────────────
+# Docker
+# ──────────────────────────
+docker-compose.override.yml
+
+# ──────────────────────────
+# IDE
+# ──────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

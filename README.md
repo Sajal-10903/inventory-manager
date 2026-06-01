@@ -9,6 +9,31 @@ A full-stack Inventory & Order Management System built with **FastAPI**, **React
 
 ---
 
+## 👩‍🏫 Invigilator Instructions
+
+This project is fully containerized and hosted on Docker Hub. Follow these instructions to pull and run the backend locally if you wish to review the Docker setup.
+
+### 1. Run the Application via Docker Compose (Recommended)
+If you have Docker Compose installed, you can simply clone this repository and run the entire stack (Frontend, Backend, and Database):
+```bash
+docker compose up --build
+```
+This will:
+- Start PostgreSQL on port `5432`
+- Start the FastAPI backend on port `8000` (accessible at `http://localhost:8000/docs`)
+- Start the React frontend on port `3000` (accessible at `http://localhost:3000`)
+- Automatically seed the database with 20 realistic tech products on startup.
+
+### 2. Pulling the Docker Image Manually
+If you want to pull the backend image directly from Docker Hub:
+```bash
+docker pull sajalsr2003/inventory-backend:latest
+```
+
+You can run this container locally. Note that it requires a `DATABASE_URL` environment variable pointing to a PostgreSQL instance (with the `postgresql+asyncpg://` driver). 
+
+---
+
 ## ✨ Features
 
 - **Product Management** — Create, read, update, and delete products with SKU, name, price, and stock tracking
@@ -21,193 +46,20 @@ A full-stack Inventory & Order Management System built with **FastAPI**, **React
 
 ---
 
-## 🏗️ Architecture
+## 🚀 Live Public URLs
 
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Frontend   │────▶│   Backend   │────▶│  PostgreSQL  │
-│  React/Vite  │     │   FastAPI   │     │     16       │
-│  Nginx :80   │     │  Uvicorn    │     │   :5432      │
-│  Port 3000   │     │  Port 8000  │     │              │
-└─────────────┘     └─────────────┘     └─────────────┘
-```
+- **Frontend Application:** https://inventory-manager-delta-eight.vercel.app
+- **Backend API (Swagger Docs):** https://inventory-manager-r9av.onrender.com/docs
+
+*Note: The frontend is securely connected to the live Render backend, which automatically seeds its own remote database. CORS is globally permitted (`["*"]`) so you can interact with the API from any client.*
 
 ---
 
-## 🚀 Quick Start
-
-### Prerequisites
-
-- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/) installed
-
-### 1. Clone & Configure
-
-```bash
-git clone <your-repo-url>
-cd Antigravity
-
-# Copy the example environment file
-cp .env.example .env
-# Edit .env if you want to change default credentials
-```
-
-### 2. Start All Services
-
-```bash
-docker compose up --build
-```
-
-This will:
-- Start a PostgreSQL 16 database
-- Build and start the FastAPI backend on port `8000`
-- Build and serve the React frontend on port `3000`
-
-### 3. Access the Application
-
-| Service    | URL                          |
-|------------|------------------------------|
-| Frontend   | http://localhost:3000         |
-| Backend API| http://localhost:8000        |
-| API Docs   | http://localhost:8000/docs   |
-
----
-
-## 🔌 API Endpoints
-
-### Customers
-
-| Method   | Endpoint              | Description          |
-|----------|-----------------------|----------------------|
-| `GET`    | `/api/customers`      | List all customers   |
-| `POST`   | `/api/customers`      | Create a customer    |
-| `GET`    | `/api/customers/{id}` | Get customer by ID   |
-| `PUT`    | `/api/customers/{id}` | Update customer      |
-| `DELETE` | `/api/customers/{id}` | Delete customer      |
-
-### Products
-
-| Method   | Endpoint              | Description          |
-|----------|-----------------------|----------------------|
-| `GET`    | `/api/products`       | List all products    |
-| `POST`   | `/api/products`       | Create a product     |
-| `GET`    | `/api/products/{id}`  | Get product by ID    |
-| `PUT`    | `/api/products/{id}`  | Update product       |
-| `DELETE` | `/api/products/{id}` | Delete product       |
-
-### Orders
-
-| Method   | Endpoint              | Description                              |
-|----------|-----------------------|------------------------------------------|
-| `GET`    | `/api/orders`         | List all orders                          |
-| `POST`   | `/api/orders`         | Create order (validates stock atomically)|
-
-### Health
-
-| Method   | Endpoint      | Description     |
-|----------|---------------|-----------------|
-| `GET`    | `/api/health` | Health check    |
-
----
-
-## 🛡️ Inventory Validation
+## 🛡️ Inventory Validation Logic
 
 When an order is placed, the system:
-
 1. **Acquires a row-level lock** on the product (`SELECT ... FOR UPDATE`)
 2. **Checks available stock** against the requested quantity
 3. **Rejects the order** with a `400` error if stock is insufficient
 4. **Atomically reduces stock** and creates the order in a single transaction
 5. **Database CHECK constraint** (`stock >= 0`) acts as a final safety net
-
-This ensures **no overselling**, even under concurrent requests.
-
----
-
-## 🗂️ Project Structure
-
-```
-.
-├── backend/
-│   ├── app/
-│   │   ├── main.py          # FastAPI entry point
-│   │   ├── config.py        # Environment configuration
-│   │   ├── database.py      # Async SQLAlchemy setup
-│   │   ├── models.py        # ORM models
-│   │   ├── schemas.py       # Pydantic schemas
-│   │   └── routers/
-│   │       ├── customers.py # Customer CRUD
-│   │       ├── products.py  # Product CRUD
-│   │       └── orders.py    # Order processing
-│   ├── Dockerfile
-│   └── requirements.txt
-├── frontend/
-│   ├── src/
-│   │   ├── App.jsx          # Main application
-│   │   ├── api.js           # API client
-│   │   └── components/      # React components
-│   ├── nginx.conf           # Production Nginx config
-│   ├── Dockerfile
-│   └── package.json
-├── docker-compose.yml
-├── .env.example
-└── README.md
-```
-
----
-
-## ⚙️ Environment Variables
-
-| Variable           | Default              | Description                       |
-|--------------------|----------------------|-----------------------------------|
-| `POSTGRES_USER`    | `postgres`           | PostgreSQL username               |
-| `POSTGRES_PASSWORD`| `postgres`           | PostgreSQL password               |
-| `POSTGRES_DB`      | `inventory_db`       | PostgreSQL database name          |
-| `DB_PORT`          | `5432`               | Exposed PostgreSQL port           |
-| `BACKEND_PORT`     | `8000`               | Exposed backend API port          |
-| `FRONTEND_PORT`    | `3000`               | Exposed frontend port             |
-| `CORS_ORIGINS`     | `*`                  | Allowed CORS origins              |
-
----
-
-## 🐳 Docker Hub
-
-### Build & Push Backend Image
-
-```bash
-# Build the backend image
-docker build -t your-dockerhub-username/inventory-backend:latest ./backend
-
-# Push to Docker Hub
-docker login
-docker push your-dockerhub-username/inventory-backend:latest
-```
-
----
-
-## ☁️ Deployment Guide
-
-### Backend + Database → Render
-
-1. Push code to GitHub
-2. Go to [Render Dashboard](https://dashboard.render.com)
-3. Create a **PostgreSQL** database (free tier)
-4. Create a **Web Service** from your GitHub repo
-   - Root directory: `backend`
-   - Build command: `pip install -r requirements.txt`
-   - Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - Add env var: `DATABASE_URL` = your Render PostgreSQL connection string (change `postgresql://` to `postgresql+asyncpg://`)
-
-### Frontend → Vercel
-
-1. Go to [Vercel](https://vercel.com)
-2. Import your GitHub repo
-3. Set root directory: `frontend`
-4. Framework preset: Vite
-5. Add env var: `VITE_API_URL` = your Render backend URL (e.g., `https://your-backend.onrender.com/api`)
-6. Deploy
-
----
-
-## 📝 License
-
-MIT

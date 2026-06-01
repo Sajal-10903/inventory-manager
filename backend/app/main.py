@@ -4,8 +4,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .database import init_db
+from .database import init_db, async_session
 from .routers import customers, orders, products
+from .seeder import seed_products
 
 
 @asynccontextmanager
@@ -13,6 +14,11 @@ async def lifespan(app: FastAPI):
     """Application lifespan: run startup/shutdown logic."""
     # Startup — create tables if they don't exist
     await init_db()
+    
+    # Seed the database
+    async with async_session() as session:
+        await seed_products(session)
+        
     yield
     # Shutdown — nothing to clean up for now
 
